@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract CasinoGame is Ownable {
   constructor() Ownable(msg.sender) {}
 
+  uint nonce = 0;
   bool gameStarted = false;
   uint64 currentGame = 0;
   mapping(uint64 => mapping (address => uint)) public gamesBets; //players bets for every game
@@ -38,7 +39,7 @@ contract CasinoGame is Ownable {
     gamesBets[currentGame][msg.sender] += msg.value;
   }
 
-  function startGame() public onlyOwner() {
+  function startGame() external onlyOwner() {
     gameStarted = true;
   }
 
@@ -47,4 +48,11 @@ contract CasinoGame is Ownable {
     currentGame++;
     players = new address payable[](0);
   }
+
+  function random(uint minNumber, uint maxNumber) internal returns (uint) {
+    uint randomnumber = uint(keccak256(abi.encodePacked(block.timestamp, msg.sender, nonce))) % maxNumber;
+    randomnumber = randomnumber + minNumber;
+    nonce++;
+    return randomnumber;
+}
 }
