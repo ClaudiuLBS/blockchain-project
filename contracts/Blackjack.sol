@@ -3,14 +3,9 @@ pragma solidity ^0.8.24;
 
 import "./CasinoGame.sol";
 
-struct Card {
-  uint value;
-  uint symbol;
-}
-
 contract Blackjack is CasinoGame {
-  Card[] private dealerCards;
-  Card[] public playerCards;
+  uint[] private dealerCards;
+  uint[] public playerCards;
 
   mapping(address => uint) playersStandValues;
   mapping(address => bool) playersVotedHit;
@@ -53,11 +48,11 @@ contract Blackjack is CasinoGame {
     _;
   }
 
-  function getDealerCards() view external onlyOwner() returns(Card[] memory){
+  function getDealerCards() view external onlyOwner() returns(uint[] memory){
     return dealerCards;
   }
 
-  function cardsSum(Card[] memory _cards) internal pure returns(uint) {
+  function cardsSum(uint[] memory _cards) internal pure returns(uint) {
     uint sum = 0;
     // calculate initial sum where Ace = 1
     for (uint i = 0; i < _cards.length; i++)
@@ -65,7 +60,7 @@ contract Blackjack is CasinoGame {
 
     // check if Aces can take the value 11
     for(uint i = 0; i < _cards.length; i++) 
-      if (_cards[i].value == 1 && sum + 10 <= 21) 
+      if (_cards[i] == 1 && sum + 10 <= 21) 
         sum += 10;
 
     return sum;
@@ -88,8 +83,8 @@ contract Blackjack is CasinoGame {
     lastActionTimestamp = block.timestamp;
   }
 
-  function randomCard() internal returns(Card memory) {
-    return Card(random(1, 14), random(0, 4));
+  function randomCard() internal returns(uint) {
+    return random(1, 14);
   }
 
   function playerHit() playerDidNotStand() playerDidNotHit() playerSumUnder21() external {
@@ -127,14 +122,14 @@ contract Blackjack is CasinoGame {
 
   function stopBlackjackGame() dealerHasFinished() public {
     pickWinners();
-    dealerCards = new Card[](0);
-    playerCards = new Card[](0);
+    dealerCards = new uint[](0);
+    playerCards = new uint[](0);
     stopGame();
   }
   
-  function cardValue(Card memory _card) internal pure returns(uint) {
-    if (_card.value > 10) return 10;
-    return _card.value;
+  function cardValue(uint _card) internal pure returns(uint) {
+    if (_card > 10) return 10;
+    return _card;
   }
 
   function pickWinners() private {
