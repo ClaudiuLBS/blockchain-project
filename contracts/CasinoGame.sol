@@ -6,7 +6,7 @@ contract CasinoGame is Ownable {
   constructor() Ownable(msg.sender) {}
 
   uint nonce = 0;
-  bool gameStarted = false;
+  bool public gameStarted = false;
   uint64 currentGame = 0;
   mapping(uint64 => mapping (address => uint)) public gamesBets; //players bets for every game
   address payable[] public players; //curent game players
@@ -17,7 +17,7 @@ contract CasinoGame is Ownable {
   }
 
   modifier minimumBet() {
-    require(msg.value > .0001 ether, "The minimum bet is  .0001 ether");
+    require(msg.value >= .0001 ether, "The minimum bet is  .0001 ether");
     _;
   }
 
@@ -31,12 +31,7 @@ contract CasinoGame is Ownable {
   }
 
   receive() external payable minimumBet() limitEntry() gameNotStarted() {
-    uint256 playerCurrentBet = gamesBets[currentGame][msg.sender];
-
-    if (playerCurrentBet == 0)
-      players.push(payable(msg.sender));
-
-    gamesBets[currentGame][msg.sender] += msg.value;
+    bet();
   }
 
   function startGame() external onlyOwner() {
@@ -47,6 +42,14 @@ contract CasinoGame is Ownable {
     gameStarted = false;
     currentGame++;
     players = new address payable[](0);
+  }
+
+  function bet() public payable minimumBet() limitEntry() gameNotStarted() {
+    uint256 playerCurrentBet = gamesBets[currentGame][msg.sender];
+    if (playerCurrentBet == 0)
+      players.push(payable(msg.sender));
+
+    gamesBets[currentGame][msg.sender] += msg.value;
   }
 
   function random(uint minNumber, uint maxNumber) internal returns (uint) {
