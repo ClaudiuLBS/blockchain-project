@@ -7,8 +7,8 @@ contract CasinoGame is Ownable {
 
   uint nonce = 0;
   bool public gameStarted = false;
-  uint64 currentGame = 0;
-  mapping(uint64 => mapping (address => uint)) public gamesBets; //players bets for every game
+  uint public currentGame = 0;
+  mapping(uint => mapping (address => uint256)) public gamesBets; //players bets for every game
   address payable[] public players; //curent game players
   
   modifier limitEntry() {
@@ -26,6 +26,11 @@ contract CasinoGame is Ownable {
     _;
   }
 
+  modifier gameIsStarted() {
+    require(gameStarted, "Game is not started yet");
+    _;
+  }
+
   function getBalance() public view returns(uint){
       return address(this).balance;
   }
@@ -38,7 +43,7 @@ contract CasinoGame is Ownable {
     gameStarted = true;
   }
 
-  function stopGame() public onlyOwner() {
+  function stopGame() internal onlyOwner() {
     gameStarted = false;
     currentGame++;
     players = new address payable[](0);
