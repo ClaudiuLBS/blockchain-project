@@ -5,7 +5,7 @@ import "./CasinoGame.sol";
 
 contract Blackjack is CasinoGame {
   uint[] private dealerCards;
-  uint[] public playerCards;
+  uint[] private playerCards;
 
   mapping(address => uint) playersStandValues;
   mapping(address => bool) playersVotedHit;
@@ -13,8 +13,8 @@ contract Blackjack is CasinoGame {
   uint256 lastActionTimestamp;
   uint public roundTime = 30;
 
-  modifier cardsHaveNotBeenDrawned() {
-    require(dealerCards.length == 0 && playerCards.length == 0,  "The cards have been already drawned");
+  modifier cardsHaveNotBeenDrawn() {
+    require(dealerCards.length == 0 && playerCards.length == 0,  "The cards have been already drawn");
     _;
   }
 
@@ -52,6 +52,10 @@ contract Blackjack is CasinoGame {
     return dealerCards;
   }
 
+  function getPlayerCards() view external returns(uint[] memory) {
+    return playerCards;
+  }
+
   function cardsSum(uint[] memory _cards) internal pure returns(uint) {
     uint sum = 0;
     // calculate initial sum where Ace = 1
@@ -74,7 +78,7 @@ contract Blackjack is CasinoGame {
     return cardsSum(dealerCards);
   }
 
-  function drawCards() public onlyOwner() cardsHaveNotBeenDrawned() gameIsStarted(){
+  function drawCards() public onlyOwner() cardsHaveNotBeenDrawn() gameIsStarted(){
     dealerCards.push(randomCard());
     playerCards.push(randomCard());
 
