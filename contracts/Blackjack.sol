@@ -12,6 +12,10 @@ contract Blackjack is CasinoGame {
   bool anyPlayerHit = false;
   uint256 lastActionTimestamp;
   uint public roundTime = 30;
+  bool dealerDrawnCards = false;
+
+  event PlayerCardsUpdated();
+  event DealerCardsUpdated();
 
   modifier cardsHaveNotBeenDrawn() {
     require(dealerCards.length == 0 && playerCards.length == 0,  "The cards have been already drawn");
@@ -48,8 +52,13 @@ contract Blackjack is CasinoGame {
     _;
   }
 
-  function getDealerCards() view external onlyOwner() returns(uint[] memory){
-    return dealerCards;
+  function getDealerCards() view external returns(uint[] memory){
+    if (dealerDrawnCards)
+      return dealerCards;
+      
+    uint[] memory resultCards = dealerCards;
+    resultCards[0] = 0; // so the player won't see the first dealer card
+    return resultCards;
   }
 
   function getPlayerCards() view external returns(uint[] memory) {
@@ -78,17 +87,21 @@ contract Blackjack is CasinoGame {
     return cardsSum(dealerCards);
   }
 
-  function drawCards() public onlyOwner() cardsHaveNotBeenDrawn() gameIsStarted(){
+  function drawCards() public onlyOwner() cardsHaveNotBeenDrawn() {
+    startGame();
     dealerCards.push(randomCard());
     playerCards.push(randomCard());
 
     dealerCards.push(randomCard());
     playerCards.push(randomCard());
     lastActionTimestamp = block.timestamp;
+
+    emit PlayerCardsUpdated();
+    emit DealerCardsUpdated();
   }
 
   function randomCard() internal returns(uint) {
-    return random(1, 14);
+    return random(1, 13);
   }
 
   function playerHit() playerDidNotStand() playerDidNotHit() playerSumUnder21() external {
@@ -117,11 +130,15 @@ contract Blackjack is CasinoGame {
       // reset the votes mapping
       playersVotedHit[playerAddress] = false;
     }
+    emit PlayerCardsUpdated();
   }
   
-  function drawDealerCards() public onlyOwner() {
-   while (dealerCardsSum() < 17)
+  function drawDealerCards() public onlyOwner() returns(uint[] memory) {
+    while (dealerCardsSum() < 17)
       dealerCards.push(randomCard()); 
+    dealerDrawnCards = true;
+    emit DealerCardsUpdated();
+    return dealerCards;
   }
 
   function stopBlackjackGame() dealerHasFinished() public {

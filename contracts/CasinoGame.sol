@@ -11,6 +11,8 @@ contract CasinoGame is Ownable {
   mapping(uint => mapping (address => uint256)) public gamesBets; //players bets for every game
   address payable[] public players; //curent game players
   
+  event GameStateChanged(bool started);
+  
   modifier limitEntry() {
     require(gamesBets[currentGame][msg.sender] + msg.value <= 1 ether, "The maximum entry is 1 ether" );
     _;
@@ -22,7 +24,7 @@ contract CasinoGame is Ownable {
   }
 
   modifier gameNotStarted() {
-    require(!gameStarted, "Can't bet after the game is started");
+    require(!gameStarted, "Game is started");
     _;
   }
 
@@ -39,14 +41,16 @@ contract CasinoGame is Ownable {
     bet();
   }
 
-  function startGame() external onlyOwner() {
+  function startGame() public onlyOwner() gameNotStarted() {
     gameStarted = true;
+    emit GameStateChanged(true);
   }
 
   function stopGame() internal onlyOwner() {
     gameStarted = false;
     currentGame++;
     players = new address payable[](0);
+    emit GameStateChanged(false);
   }
 
   function bet() public payable minimumBet() limitEntry() gameNotStarted() {
@@ -55,6 +59,10 @@ contract CasinoGame is Ownable {
       players.push(payable(msg.sender));
 
     gamesBets[currentGame][msg.sender] += msg.value;
+  }
+
+  function myBet() public view returns(uint) {
+    return gamesBets[currentGame][msg.sender];
   }
 
   function random(uint minNumber, uint maxNumber) internal returns (uint) {
