@@ -6,17 +6,15 @@ import { BlackjackContract } from './utils/blackjack.utils';
 import { ethers } from 'ethers';
 
 const App = () => {
+  const blackjack = new BlackjackContract();
   const [account, setAccount] = useState("");
   const [betValue, setBetValue] = useState("0");
-  const [blackjack, setBlackjack] = useState(new BlackjackContract());
   const [playerCards, setPlayerCards] = useState([]);
   const [dealerCards, setDealerCards] = useState([]);
   const [currentBet, setCurrentBet] = useState(0);
 
   useEffect(() => {
     getConnectedAccount().then(res => setAccount(res))
-    setBlackjack(new BlackjackContract())
-
     refreshBet();
     blackjack.gameStarted().then(res => {
       if (res) refreshCards();
