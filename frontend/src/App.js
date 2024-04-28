@@ -1,23 +1,29 @@
 import logo from './logo.svg';
 import './App.css';
 
-function App() {
+import { getConnectedAccount, isConnected, requestAccount } from './utils/ethers.utils'
+import { useEffect, useState } from 'react';
+
+const App = () => {
+  const [account, setAccount] = useState("");
+
+  useEffect(() => {
+    getConnectedAccount().then(res => setAccount(res))
+  }, [account])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+    <div>
+      <header className='app-header'>
+        <p className='logo'>ETHERS BET</p>
+        {isConnected ? <p className='button-secondary'>{account}</p> :
+          <button className='button-primary' onClick={requestAccount}>
+            Connect account
+          </button>
+        }
       </header>
+      <body>
+
+      </body>
     </div>
   );
 }
